@@ -1,0 +1,39 @@
+@namespace("ca.dataedu.avro")
+protocol AvroSchemaToolInput {
+
+  record Message {
+    array<string> actionRecommendedRules;
+    array<Action> actions;
+    union { null, float } bcComm = null;
+    union { null, string } evaluationType = null;
+    Payload requestPayload;
+  }
+
+  record Payload {
+    union { null, string } deviceName = null;
+    union { null, boolean } doNotRedirect = null;
+    union { null, long } oldMobileNumber = null;
+  }
+
+  record Action {
+    array<union { ActionMessage, null }> actionMessagesList;
+    union { null, string } ruleName = null;
+    Rule versionedRule;
+  }
+
+  record Rule {
+    union { null, string } ruleName = null;
+    union { null, int } ruleVersion = null;
+  }
+
+  record ActionMessage {
+    array<union { IndividualActionMessage, null }> actionMessages;
+    union { null, string } messageType = null;
+  }
+
+  record IndividualActionMessage {
+    union { null, string } action = null;
+    union { null, string } message = null;
+  }
+
+}

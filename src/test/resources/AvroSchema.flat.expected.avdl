@@ -1,0 +1,19 @@
+@namespace("ca.dataedu.avro")
+protocol AvroSchemaToolOutput {
+
+  record MessageFlatten {
+    union { null, string } actionRecommendedRules = null;
+    union { null, string } actions_actionMessagesList_actionMessages_action = null;
+    union { null, string } actions_actionMessagesList_actionMessages_message = null;
+    union { null, string } actions_actionMessagesList_messageType = null;
+    union { null, string } actions_ruleName = null;
+    union { null, string } actions_versionedRule_ruleName = null;
+    union { null, int } actions_versionedRule_ruleVersion = null;
+    union { null, float } bcComm = null;
+    union { null, string } evaluationType = null;
+    union { null, string } requestPayload_deviceName = null;
+    union { null, boolean } requestPayload_doNotRedirect = null;
+    union { null, long } requestPayload_oldMobileNumber = null;
+  }
+
+}

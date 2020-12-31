@@ -1,0 +1,17 @@
+# sbt
+lib_managed
+project/project
+target
+.bsp
+
+# Worksheets (Eclipse or IntelliJ)
+*.sc
+
+# IntelliJ
+.idea
+
+# Mac
+.DS_Store
+
+# Log files
+*.log
