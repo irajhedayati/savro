@@ -15,44 +15,6 @@ class AvroSchemaTest extends AnyFlatSpec {
     result.isNullable mustBe true
   }
 
-  "Avro IDL" should "generate proper schema" in {
-    val idl =
-      """
-        |@namespace("ca.dataedu")
-        |protocol AvroSchemaTool {
-        |
-        |  record TestObject {
-        |    TestObject2 name;
-        |  }
-        |  record TestObject2 {
-        |    int age;
-        |  }
-        |
-        |}
-        |""".stripMargin
-    AvroSchema(idl) mustBe
-    """{
-        |  "protocol" : "AvroSchemaTool",
-        |  "namespace" : "ca.dataedu",
-        |  "types" : [ {
-        |    "type" : "record",
-        |    "name" : "TestObject",
-        |    "fields" : [ {
-        |      "name" : "name",
-        |      "type" : {
-        |        "type" : "record",
-        |        "name" : "TestObject2",
-        |        "fields" : [ {
-        |          "name" : "age",
-        |          "type" : "int"
-        |        } ]
-        |      }
-        |    } ]
-        |  } ],
-        |  "messages" : { }
-        |}""".stripMargin
-  }
-
   "Create record" should "If there is an empty key, ignore it" in {
     parse("""
             |{

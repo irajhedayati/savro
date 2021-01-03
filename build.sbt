@@ -30,19 +30,39 @@ libraryDependencies ++= avro ++ circe
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.1.1" % Test
 
 /** Release related settings */
-commands ++= Seq(tagReleaseVersion, bumpVersion)
-def releaseCommand(cmdName: String, settings: Seq[Def.Setting[_]]): Command =
-  Command.command(cmdName)((state: State) => {
-    val extracted = Project.extract(state)
-    val customState = extracted.appendWithSession(settings, state)
-    Command.process("release with-defaults", customState)
-  })
-lazy val tagReleaseSettings = Seq(
-  releaseProcess := Seq(inquireVersions, setReleaseVersion, commitReleaseVersion, tagRelease, pushChanges)
+releaseCrossBuild := true
+releaseVersionBump := Version.Bump.Minor
+releaseProcess := Seq[ReleaseStep](
+  checkSnapshotDependencies, // check that there are no SNAPSHOT dependencies
+  inquireVersions, // ask user to enter the current and next version
+  runClean, // clean
+  runTest, // run tests
+  setReleaseVersion, // set release version in version.sbt
+  commitReleaseVersion, // commit the release version
+  tagRelease, // create git tag
+  releaseStepCommandAndRemaining("+publishSigned"), // run +publishSigned command to sonatype stage release
+  setNextVersion, // set next version in version.sbt
+  commitNextVersion, // commit next version
+  releaseStepCommand("sonatypeRelease"), // run sonatypeRelease and publish to maven central
+  pushChanges // push changes to git
 )
-lazy val bumpVersionSettings = Seq(
-  releaseVersionBump := Version.Bump.Minor,
-  releaseProcess := Seq(inquireVersions, setNextVersion, commitNextVersion)
+
+/** Sonatype release configuration */
+homepage := Some(url("https://github.com/irajhedayati/savro"))
+scmInfo := Some(ScmInfo(url("https://github.com/irajhedayati/savro"), "git@github.com:irajhedayati/savro.git"))
+developers := List(
+  Developer(
+    "irajhedayati",
+    "Iraj Hedayati",
+    "iraj.hedayati@gmail.com",
+    url("https://www.dataedu.ca")
+  )
 )
-lazy val tagReleaseVersion = releaseCommand("tagReleaseVersion", tagReleaseSettings)
-lazy val bumpVersion = releaseCommand("bumpVersion", bumpVersionSettings)
+licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
+publishMavenStyle := true
+publishTo := Some(
+  if (isSnapshot.value)
+    Opts.resolver.sonatypeSnapshots
+  else
+    Opts.resolver.sonatypeStaging
+)
