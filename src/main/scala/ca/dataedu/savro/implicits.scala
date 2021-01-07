@@ -33,4 +33,20 @@ object implicits {
       }
   }
 
+  implicit class OptionOfEitherOfOption[A, B](optionOfEitherOfOption: Option[Either[A, Option[B]]]) {
+
+    /** It simplifies nested option-either type by pushing down the value of top-level option to the nested option.
+      * It means that if the actual value is `None`, it will return `Right(None)`. Otherwise, it omits the top-level
+      * and returns the value of nested `Either`*/
+    def pushDownOption(): Either[A, Option[B]] = optionOfEitherOfOption.getOrElse(Right(None))
+
+  }
+
+  implicit class EitherOfOptionOps[A, B](eitherOfOption: Either[A, Option[B]]) {
+
+    def mapRightOption[C](f: B => C): Either[A, Option[C]] = eitherOfOption.map(_.map(f))
+
+    def flatMapRightOption[C](f: B => Option[C]): Either[A, Option[C]] = eitherOfOption.map(_.flatMap(f))
+  }
+
 }

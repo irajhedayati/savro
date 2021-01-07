@@ -333,3 +333,30 @@ schema1.union(schema2)
 There are two other functions related to making union of two schema but both of
 them are variants of this one. It is recommended to simply use the above
 -mentioned function. 
+
+### Avro (GenericRecord)
+
+Working with Java objects in Scala are sometimes verbose and frustrating. These
+implicits will make it easier.
+
+```scala
+import ca.dataedu.savro.AvroImplicits._
+import ca.dataedu.savro._
+import org.apache.avro.generic.GenericRecord
+
+val avroMessage: GenericRecord = ???
+// To get the value of a field as string
+val stringValue: Option[String] = avroMessage.asString("fieldName")
+// In order to get the value of a field as a number
+val longValue: Either[SAvroError, Option[Long]] = 
+  avroMessage.asLong("fieldName")
+val intValue: Either[SAvroError, Option[Int]] = avroMessage.asInt("fieldName")
+val doubleValue: Either[SAvroError, Option[Double]] = 
+  avroMessage.asDouble("fieldName")
+// To get the value as boolean
+val booleanValue: Either[SAvroError, Option[Boolean]] = 
+  avroMessage.asBoolean("fieldName")
+// OR implement a custom field extractor using `as[T]` function
+```
+
+Another useful function is `set` which helps you to set the value of a field.

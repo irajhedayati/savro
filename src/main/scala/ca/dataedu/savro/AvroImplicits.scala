@@ -1,17 +1,119 @@
 package ca.dataedu.savro
 
-import ca.dataedu.savro.AvroSchemaError.{ IllegalOperationError, NonNullableUnionTypeError }
+import ca.dataedu.savro.AvroError._
+import ca.dataedu.savro.AvroSchemaError._
 import org.apache.avro.Schema.Field
 import org.apache.avro.{ Schema, SchemaBuilder }
 import org.apache.avro.Schema.Type._
 import ca.dataedu.savro.AvroSchema._
+import org.apache.avro.generic.GenericRecord
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
+import scala.util.{ Failure, Success, Try }
 
 object AvroImplicits {
 
   import implicits._
+
+  /**
+    * Add some functionalities to facilitate extracting values from an Avro message
+    */
+  implicit class GenericRecordOps(record: GenericRecord) {
+
+    /** Tries to extract the value of the field name from the Avro message.
+      *
+      * The provided function accepts a value (a JVM object) with the schema of the field should return an optional
+      * value. The function doesn't need to be concern about the null values because `as` will return a `None` if the
+      * value of the field is `null` and won't call the function.
+      */
+    def as[T](
+        fieldName: String
+    )(f: (AnyRef, Schema) => Either[SAvroError, Option[T]]): Either[SAvroError, Option[T]] =
+      Option(record.get(fieldName))
+        .map(value => fieldSchema(fieldName).flatMap(schema => f(value, schema)))
+        .pushDownOption()
+
+    /** Returns the value of `fieldName` as long if exists */
+    def asLong(fieldName: String): Either[SAvroError, Option[Long]] =
+      as(fieldName) { (value, schema) =>
+        schema.getType match {
+          case INT | LONG => convert(value, _.asInstanceOf[Number].longValue())
+          case STRING     => convert(value, _.toString.toLong)
+          case _          => Left(ToNumberError(value.toString, "Field is not a supported type", None))
+        }
+      }
+
+    /** Returns the value of `fieldName` as integer if exists */
+    def asInt(fieldName: String): Either[SAvroError, Option[Int]] =
+      as(fieldName) { (value, schema) =>
+        schema.getType match {
+          case INT    => convert(value, _.asInstanceOf[Number].intValue())
+          case STRING => convert(value, _.toString.toInt)
+          case _      => Left(ToNumberError(value.toString, "Field is not a supported type", None))
+        }
+      }
+
+    /** Returns the value of `fieldName` as double if exists */
+    def asDouble(fieldName: String): Either[SAvroError, Option[Double]] =
+      as(fieldName) { (value, schema) =>
+        schema.getType match {
+          case INT | LONG | DOUBLE | FLOAT => convert(value, _.asInstanceOf[Number].doubleValue())
+          case STRING                      => convert(value, _.toString.toDouble)
+          case _                           => Left(ToNumberError(value.toString, "Field is not a supported type", None))
+        }
+      }
+
+    /** Returns the value of `fieldName` as string if exists */
+    def asString(fieldName: String): Option[String] = Option(record.get(fieldName)).map(_.toString)
+
+    /** Returns the value of `fieldName` as boolean if exists */
+    def asBoolean(fieldName: String): Either[SAvroError, Option[Boolean]] =
+      as(fieldName) { (value, schema) =>
+        schema.getType match {
+          case BOOLEAN =>
+            Try(value.asInstanceOf[Boolean]) match {
+              case Failure(exception) =>
+                Left(ToBooleanError(value.toString, "Unable to cast to boolean", Option(exception)))
+              case Success(value) => Right(Option(value))
+            }
+          case _ => Left(ToBooleanError(value.toString, "Field type is not boolean", None))
+        }
+      }
+
+    /** Returns the actual schema of the given field stripping "null" if it is an optional field.
+      * If will return an error if the "actual" schema is a union. */
+    private def fieldSchema(fieldName: String): Either[NonNullableUnionTypeError, Schema] =
+      record.getSchema.getField(fieldName).schema().getTypeWithoutNull
+
+    /** A wrapper for `GenericRecord#put` that supports null values.
+      * Set the value of a field with an optional value. It puts `null` if the value is empty.
+      * Note that due to GenericRecord limitation, the record is not immutable. The return value is the same record
+      * and not a new on.
+      * */
+    def set[T](fieldName: String, value: Option[T]): GenericRecord = {
+      //noinspection GetOrElseNull "orNull" is not compatible with Avro
+      record.put(fieldName, value.getOrElse(null))
+      record
+    }
+
+    /** A wrapper for `GenericRecord#put` that supports null values.
+      * Set the value of a field with an optional value. It puts `null` if the value is empty.
+      * */
+    def set[T](fieldName: String, value: T): GenericRecord = {
+      //noinspection GetOrElseNull "orNull" is not compatible with Avro
+      record.put(fieldName, value)
+      record
+    }
+
+    /** Converts the value to number based on the function or return an error if it's not a number */
+    private def convert[T](fieldValue: AnyRef, f: AnyRef => T): Either[ToNumberError, Option[T]] =
+      Try(f(fieldValue)) match {
+        case Failure(error) => Left(ToNumberError(fieldValue.toString, "Failed to cast to a number", Option(error)))
+        case Success(value) => Right(Option(value))
+      }
+
+  }
 
   implicit class SchemaFieldOps(field: Field) {
 

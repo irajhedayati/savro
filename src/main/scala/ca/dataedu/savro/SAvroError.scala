@@ -45,3 +45,19 @@ object AvroSchemaError {
     * this error never happens and is just to complete the types. */
   final case class AvroSchemaJsonError(override val input: String, override val message: String) extends AvroSchemaError
 }
+
+sealed trait AvroError extends SAvroError {
+  val input: AnyRef
+  val message: String
+  val cause: Option[Throwable]
+
+  override def toString: String =
+    s"""Input: $input
+       |Error Message: $message
+       |cause: ${cause.map(_.getMessage)}""".stripMargin
+}
+
+object AvroError {
+  final case class ToNumberError(input: String, message: String, cause: Option[Throwable]) extends AvroError
+  final case class ToBooleanError(input: String, message: String, cause: Option[Throwable]) extends AvroError
+}
