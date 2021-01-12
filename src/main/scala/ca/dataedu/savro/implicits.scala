@@ -33,6 +33,17 @@ object implicits {
       }
   }
 
+  implicit class EitherOperations[A, B](either: Either[A, B]) {
+
+    /** Applies a function on the left side. Normally, it is used to change the error type. */
+    final def mapError[C](errorTransformer: A => C): Either[C, B] =
+      either match {
+        case Left(error)  => Left(errorTransformer(error))
+        case Right(value) => Right(value)
+      }
+
+  }
+
   implicit class OptionOfEitherOfOption[A, B](optionOfEitherOfOption: Option[Either[A, Option[B]]]) {
 
     /** It simplifies nested option-either type by pushing down the value of top-level option to the nested option.

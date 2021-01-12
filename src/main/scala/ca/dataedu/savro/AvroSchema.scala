@@ -7,6 +7,7 @@ import org.apache.avro.Schema.Field
 import org.apache.avro.{ Schema, SchemaBuilder }
 
 import scala.collection.JavaConverters._
+import scala.util.Try
 import scala.util.matching.Regex
 
 /** A set of constructors to generate Avro schema */
@@ -42,6 +43,19 @@ object AvroSchema {
       }
     case _ => Left(IllegalJsonInput(json, "The input message should be a JSON object or a JSON array"))
   }
+
+  def apply(json: Json): Either[AvroSchemaJsonError, Schema] =
+    Try(new Schema.Parser().parse(json.toString()))
+      .fold(
+        error =>
+          Left(
+            AvroSchemaJsonError(
+              json.toString(),
+              s"Unable to parse the input JSON to an Avro schema. Error ${error.getMessage}"
+            )
+        ),
+        schema => Right(schema)
+      )
 
   /**
     * Infer Avro schema from an array of JSON objects. The final result should accept all the input objects normally
@@ -100,7 +114,7 @@ object AvroSchema {
       .map {
         case (fieldName, fieldValue) =>
           val sanitizedFieldName = SanitizedFieldName(fieldName)
-          (sanitizedFieldName.validFieldName, fieldValue, sanitizedFieldName.explanation.getOrElse(""))
+          (sanitizedFieldName.validFieldName, fieldValue, sanitizedFieldName.explanation.orNull)
       }
       .sortBy(_._1)
       .foreach {
@@ -167,6 +181,7 @@ object AvroSchema {
       isArrayItem: Boolean
   ): Either[IllegalJsonInput, Schema] =
     json match {
+      case _ if json.isNull    => Right(SchemaBuilder.builder().nullType())
       case _ if json.isString  => Right(SchemaBuilder.builder().stringType().makeNullable)
       case _ if json.isBoolean => Right(SchemaBuilder.builder().booleanType().makeNullable)
       case _ if json.isNumber && json.asString.fold(false)(FloatingPointPattern.findFirstIn(_).nonEmpty) =>

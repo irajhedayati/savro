@@ -95,10 +95,12 @@ class AvroImplicitsTest extends AnyFlatSpec with Matchers {
   }
 
   behavior.of("Avro schema extract types not null")
+
   it should "return the main schema of a nullable type" in {
     val nullableString = SchemaBuilder.unionOf().nullType().and().stringType().endUnion()
     nullableString.getTypesWithoutNull mustBe SchemaBuilder.builder().stringType()
   }
+
   it should "return the schema if it's not nullable" in {
     val notNullSchema = SchemaBuilder.builder().stringType()
     notNullSchema.getTypesWithoutNull mustBe notNullSchema
@@ -313,5 +315,32 @@ class AvroImplicitsTest extends AnyFlatSpec with Matchers {
 
     a.mergeWith(b) mustBe expected
     b.mergeWith(a) mustBe expectedReverted
+  }
+
+  behavior.of("addField")
+
+  it should "add the field with default value" in {
+    val schema = new Schema.Parser().parse(
+      """{
+        |  "type": "record",
+        |  "name": "Person",
+        |  "namespace": "ca.dataedu.avro",
+        |  "fields": []
+        |}""".stripMargin
+    )
+    val expected = new Schema.Parser().parse(
+      """{
+        |  "type": "record",
+        |  "name": "Person",
+        |  "namespace": "ca.dataedu.avro",
+        |  "fields": [{
+        |    "name": "phone",
+        |    "type": "long",
+        |    "default": 0
+        |  }]
+        |}""".stripMargin
+    )
+    schema.addField("phone", SchemaBuilder.builder().longType(), None, Option(0L)).toString() mustBe expected.toString()
+
   }
 }

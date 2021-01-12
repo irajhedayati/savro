@@ -125,6 +125,21 @@ object AvroImplicits {
   /*  Schema implicits */
   implicit class SchemaImprovement(schema: Schema) {
 
+    /** Adds a field to the schema and returns a new schema */
+    final def addField(
+        fieldName: String,
+        fieldSchema: Schema,
+        doc: Option[String] = None,
+        defaultValue: Option[Any] = None
+    ): Schema = {
+      val outputSchema = Schema.createRecord(schema.getName, schema.getDoc, schema.getNamespace, false)
+      val outputFieldList = {
+        for (f <- schema.getFields.asScala) yield new Field(f.name, f.schema, f.doc, f.defaultVal)
+      }.toList :+ new Field(fieldName, fieldSchema, doc.orNull, defaultValue.orNull)
+      outputSchema.setFields(outputFieldList.asJava)
+      outputSchema
+    }
+
     /**
       * Converts the schema to its flatten version.
       * It supports primitives, arrays and nested complex data structures.
