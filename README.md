@@ -5,7 +5,7 @@ binaries.
 In order to add the library to your projects,
 
 ```sbt
-libraryDependencies += "ca.dataedu" %% "savro" % "0.1.0"
+libraryDependencies += "ca.dataedu" %% "savro" % "0.3.0"
 ```
 
 ## Infer Avro schema
