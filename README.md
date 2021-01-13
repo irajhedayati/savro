@@ -306,6 +306,28 @@ val schema: Schema = ???
 schema.makeNullable
 ```
 
+**Add a field**
+
+```scala
+import ca.dataedu.savro.AvroImplicits._
+import org.apache.avro.Schema
+import org.apache.avro.SchemaBuilder
+
+val schema: Schema = ???
+schema.addField("newField1", SchemaBuilder.builder().stringType())
+schema.addField(
+ "newField2", 
+ SchemaBuilder.builder().stringType(),
+ Option("Ths implicit function used to add new field to an schema")
+)
+schema.addField(
+ "newField3", 
+ SchemaBuilder.builder().stringType(),
+ Option("Ths implicit function used to add new field to an schema"),
+ Option("Default Value")
+)
+```
+
 **Some tests**
 
 ```scala
