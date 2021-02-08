@@ -63,6 +63,7 @@ class AvroSchemaToIdl(schema: Schema, protocol: String) {
       recordsToProcessStack.push(field)
       field.getName
     case _ if field.isArray => s"array<${schemaTypeInIdl(field.getElementType)}>"
+    case _ if field.isMap   => s"map<${schemaTypeInIdl(field.getValueType)}>"
     case _                  => field.getType.toString.toLowerCase
   }
 }

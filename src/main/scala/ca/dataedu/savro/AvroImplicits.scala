@@ -281,6 +281,7 @@ object AvroImplicits {
 
     final def isRecord: Boolean = schema.getType.equals(Schema.Type.RECORD)
     final def isArray: Boolean = schema.getType.equals(Schema.Type.ARRAY)
+    final def isMap: Boolean = schema.getType.equals(Schema.Type.MAP)
 
     final def toIdl(protocol: String): Either[IllegalOperationError, String] =
       if (!schema.isRecord) Left(IllegalOperationError(schema, "The input schema is not a record"))

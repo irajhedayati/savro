@@ -337,6 +337,7 @@ import org.apache.avro.Schema
 val schema: Schema = ???
 schema.isRecord
 schema.isArray
+schema.isMap
 ```
 
 **Make union of two schemas**
