@@ -39,6 +39,23 @@ class AvroSchemaTest extends AnyFlatSpec {
     )
   }
 
+  it should "handle illegal characters in the field name" in {
+    parse("""{
+            |  " AB - ( CD ) ": "value"
+            |}""".stripMargin).map(
+      json =>
+        AvroSchema.inferRecord(json, "Payload", None) mustBe Right(
+          SchemaBuilder
+            .record("Payload")
+            .fields()
+            .name("AB_CD")
+            .`type`(SchemaBuilder.builder().stringType().makeNullable)
+            .withDefault(null)
+            .endRecord()
+      )
+    )
+  }
+
   it should "support 'null' in the value" in {
     parse("""
             |{
