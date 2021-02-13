@@ -46,6 +46,8 @@ releaseProcess := Seq[ReleaseStep](
   releaseStepCommand("sonatypeRelease"), // run sonatypeRelease and publish to maven central
   pushChanges // push changes to git
 )
+publishConfiguration := publishConfiguration.value.withOverwrite(true)
+publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
 
 /** Sonatype release configuration */
 homepage := Some(url("https://github.com/irajhedayati/savro"))
