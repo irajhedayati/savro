@@ -5,7 +5,7 @@ binaries.
 In order to add the library to your projects,
 
 ```sbt
-libraryDependencies += "ca.dataedu" %% "savro" % "0.3.0"
+libraryDependencies += "ca.dataedu" %% "savro" % "0.4.0"
 ```
 
 ## Infer Avro schema
@@ -383,3 +383,59 @@ val booleanValue: Either[SAvroError, Option[Boolean]] =
 ```
 
 Another useful function is `set` which helps you to set the value of a field.
+
+## HiveQL
+
+### Convert Avro schema to HiveQL CREATE TABLE
+
+In order to convert an Avro schema to a `CREATE TABLE` statement
+
+```scala
+import ca.dataedu.savro.HiveSchema
+import org.apache.avro.Schema
+
+val schema: Schema = ???
+HiveSchema(schema)
+```
+
+Here is sample input and sample output
+
+```json
+{
+  "type": "record",
+  "name": "NewPerson",
+  "namespace": "ca.dataedu.avro",
+  "fields": [
+    {"name": "phone", "type": "long", "default": 0}, 
+    {"name": "lastName", "type": "string"}, 
+    {"name": "name", "type": ["null", "string"], "default": null}, 
+    {
+      "name": "addresses",
+      "type": {
+        "type": "map",
+        "values": {
+          "type": "record",
+          "name": "Address",
+          "namespace": "ca.dataedu.avro",
+          "fields": [
+            {"name": "street", "type": "string"},
+            {"name": "city", "type": "string"}
+          ]
+        }
+      }
+    }
+  ]
+}
+```
+
+```
+CREATE TABLE new_person (
+  `phone`                       bigint,
+  `lastName`                    string,
+  `name`                        string,
+  `addresses`                   map<string,struct<
+    `street`                      : string,
+    `city`                        : string
+>>
+)
+```

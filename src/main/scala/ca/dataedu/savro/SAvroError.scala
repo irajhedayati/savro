@@ -44,6 +44,12 @@ object AvroSchemaError {
   /** When an error happens parsing JSON representation of an Avro schema. As the operation are under control,
     * this error never happens and is just to complete the types. */
   final case class AvroSchemaJsonError(override val input: String, override val message: String) extends AvroSchemaError
+
+  /** An error raised when trying to do an operation on types that are not supported. The definition of "unsupported"
+    * depends on the direction. For example, in converting Avro schema to Hive schema, Hive doesn't support type of
+    * 'NULL' that Avro has it. */
+  final case class UnsupportedTypeError(override val input: String, override val message: String)
+      extends AvroSchemaError
 }
 
 sealed trait AvroError extends SAvroError {

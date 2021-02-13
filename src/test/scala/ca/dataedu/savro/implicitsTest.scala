@@ -21,4 +21,28 @@ class implicitsTest extends AnyFlatSpec with Matchers {
     Option(Option("Right Value").asRight[Int]).pushDownOption() shouldBe Right(Option("Right Value"))
     Option(None.asRight[Int]).pushDownOption() shouldBe Right(None)
   }
+
+  behavior.of("StringOps")
+
+  it should "return 'true' if string is CamelCase once isCamelCase is called" in {
+    "EnrichedTrip".isCamelCase shouldBe true
+    "Trip".isCamelCase shouldBe true
+  }
+
+  it should "return 'false' if string is not CamelCase once isCamelCase is called" in {
+    "enriched_trip".isCamelCase shouldBe false
+    "enriched-trip".isCamelCase shouldBe false
+    "trip".isCamelCase shouldBe false
+  }
+
+  it should "return 'true' if string is snake-case once isSnakeCase is called" in {
+    "enriched_trip".isSnakeCase shouldBe true
+    "trip".isSnakeCase shouldBe true
+  }
+
+  it should "return 'false' if string is not snake-case once isSnakeCase is called" in {
+    "EnrichedTrip".isSnakeCase shouldBe false
+    "enriched-trip".isSnakeCase shouldBe false
+  }
+
 }

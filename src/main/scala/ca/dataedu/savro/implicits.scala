@@ -60,4 +60,18 @@ object implicits {
     def flatMapRightOption[C](f: B => Option[C]): Either[A, Option[C]] = eitherOfOption.map(_.flatMap(f))
   }
 
+  implicit class StringOps(input: String) {
+
+    def toSnakeCase: String =
+      if (input.isSnakeCase) input
+      else if (input.isCamelCase) "[A-Z]".r.replaceAllIn(input, { m =>
+        if (m.end(0) == 1) m.group(0).toLowerCase() else "_" + m.group(0).toLowerCase()
+      })
+      else SanitizedFieldName(input).validFieldName
+
+    def isCamelCase: Boolean = "^([A-Z][a-z0-9]*)+$".r.findFirstIn(input).nonEmpty
+
+    def isSnakeCase: Boolean = "^([a-z][a-z0-9_]*)+$".r.findFirstIn(input).nonEmpty
+  }
+
 }
