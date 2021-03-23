@@ -366,6 +366,7 @@ implicits will make it easier.
 import ca.dataedu.savro.AvroImplicits._
 import ca.dataedu.savro._
 import org.apache.avro.generic.GenericRecord
+import org.apache.avro.Schema
 
 val avroMessage: GenericRecord = ???
 // To get the value of a field as string
@@ -380,6 +381,10 @@ val doubleValue: Either[SAvroError, Option[Double]] =
 val booleanValue: Either[SAvroError, Option[Boolean]] = 
   avroMessage.asBoolean("fieldName")
 // OR implement a custom field extractor using `as[T]` function
+
+// To replace the schema of an Avro message with a new one
+val newSchema: Schema = ???
+val newMessage: GenericRecord = newMessage.updateSchema(newSchema)
 ```
 
 Another useful function is `set` which helps you to set the value of a field.

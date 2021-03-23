@@ -50,6 +50,9 @@ object AvroSchemaError {
     * 'NULL' that Avro has it. */
   final case class UnsupportedTypeError(override val input: String, override val message: String)
       extends AvroSchemaError
+
+  final case class IncompatibleSchemaError(override val input: Schema, override val message: String)
+      extends AvroSchemaError
 }
 
 sealed trait AvroError extends SAvroError {

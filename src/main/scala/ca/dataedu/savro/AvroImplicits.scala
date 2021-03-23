@@ -6,7 +6,7 @@ import org.apache.avro.Schema.Field
 import org.apache.avro.{ Schema, SchemaBuilder }
 import org.apache.avro.Schema.Type._
 import ca.dataedu.savro.AvroSchema._
-import org.apache.avro.generic.GenericRecord
+import org.apache.avro.generic.{ GenericRecord, GenericRecordBuilder }
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
@@ -111,6 +111,24 @@ object AvroImplicits {
       Try(f(fieldValue)) match {
         case Failure(error) => Left(ToNumberError(fieldValue.toString, "Failed to cast to a number", Option(error)))
         case Success(value) => Right(Option(value))
+      }
+
+    /**
+      * Replaces the old schema with the new schema.
+      * It will return an error if the schema don't match. For the documentation on the schema resolution, refer to
+      * https://avro.apache.org/docs/1.9.2/spec.html#Schema+Resolution
+      */
+    def updateSchema(newSchema: Schema): Either[IncompatibleSchemaError, GenericRecord] =
+      Try {
+        val builder = new GenericRecordBuilder(newSchema)
+        newSchema.getFields.asScala.foreach { field =>
+          val value = Option(record.get(field.name())).getOrElse(field.defaultVal())
+          builder.set(field.name(), value)
+        }
+        builder.build()
+      } match {
+        case Failure(exception) => Left(IncompatibleSchemaError(newSchema, exception.getMessage))
+        case Success(value)     => Right(value)
       }
 
   }
