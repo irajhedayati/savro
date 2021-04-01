@@ -107,8 +107,8 @@ object AvroSchema {
       name: String,
       nameSpace: Option[String]
   ): Either[IllegalJsonInput, Schema] = {
-    val builder =
-      SchemaBuilder.record(s"${name.head.toUpper.toString}${name.tail}").namespace(nameSpace.getOrElse("")).fields()
+    val recordName = s"${name.head.toUpper.toString}${name.tail}"
+    val builder = SchemaBuilder.record(recordName).namespace(nameSpace.getOrElse("")).fields()
     jsonObject.toList
       .filter(_._1.nonEmpty)
       .map {
@@ -184,8 +184,8 @@ object AvroSchema {
       case _ if json.isNull    => Right(SchemaBuilder.builder().nullType())
       case _ if json.isString  => Right(SchemaBuilder.builder().stringType().makeNullable)
       case _ if json.isBoolean => Right(SchemaBuilder.builder().booleanType().makeNullable)
-      case _ if json.isNumber && json.asString.fold(false)(FloatingPointPattern.findFirstIn(_).nonEmpty) =>
-        Right(SchemaBuilder.builder().floatType().makeNullable)
+      case _ if json.isNumber && FloatingPointPattern.findFirstIn(json.toString()).nonEmpty =>
+        Right(SchemaBuilder.builder().doubleType().makeNullable)
       case _ if json.isNumber && json.asNumber.fold(false)(_.toInt.isDefined) =>
         Right(SchemaBuilder.builder().intType().makeNullable)
       case _ if json.isNumber =>
