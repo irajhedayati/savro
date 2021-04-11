@@ -199,6 +199,26 @@ aField.hasSameSchema(anotherField)
 | Optional String | Integer | `false` |
 | Optional String | Optional Integer | `false` |
 
+**Default Value**
+
+Here is definition of a nullable schema for a field:
+
+```json
+{ "name": "address", "type": ["null","string"], "default": null }
+```
+
+The default value is set to be `null`. Now, if you try to get the default value
+programmatically, it will return `org.apache.avro.JsonProperties.Null` which is
+used internally by Avro. The following implicit simplifies it by returning a 
+proper JVM `null`.
+
+```scala
+import ca.dataedu.savro.AvroImplicits._
+import org.apache.avro.Schema.Field
+
+val aField: Field = ???
+aField.default
+```
 
 ### Avro schema
 

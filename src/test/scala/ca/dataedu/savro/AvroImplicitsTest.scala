@@ -373,17 +373,17 @@ class AvroImplicitsTest extends AnyFlatSpec with Matchers {
         |  "type": "record",
         |  "name": "Person",
         |  "namespace": "ca.dataedu.avro",
-        |  "fields": [{
-        |    "name": "phone",
-        |    "type": "long",
-        |    "default": 0
-        |  }]
+        |  "fields": [
+        |    { "name": "phone", "type": "long", "default": 0 },
+        |    { "name": "address", "type": ["null","string"], "default": null }
+        |  ]
         |}""".stripMargin
     )
     val original = new GenericRecordBuilder(schema).set("phone", 5141112222L).build()
     val copy = original.copy()
     copy.put("phone", 4381112222L)
     copy.get("phone") shouldBe 4381112222L // the copy object should be updated
+    copy.get("address") shouldBe null
     original.get("phone") shouldBe 5141112222L // the original object should not be updated
   }
 

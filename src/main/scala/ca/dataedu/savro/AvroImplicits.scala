@@ -1,12 +1,12 @@
 package ca.dataedu.savro
 
 import ca.dataedu.savro.AvroError._
+import ca.dataedu.savro.AvroSchema._
 import ca.dataedu.savro.AvroSchemaError._
 import org.apache.avro.Schema.Field
-import org.apache.avro.{ Schema, SchemaBuilder }
 import org.apache.avro.Schema.Type._
-import ca.dataedu.savro.AvroSchema._
 import org.apache.avro.generic.{ GenericRecord, GenericRecordBuilder }
+import org.apache.avro.{ JsonProperties, Schema, SchemaBuilder }
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters._
@@ -135,7 +135,7 @@ object AvroImplicits {
     def copy(): GenericRecord = {
       val builder = new GenericRecordBuilder(record.getSchema)
       record.getSchema.getFields.asScala.foreach { field =>
-        val value = Option(record.get(field.name())).getOrElse(field.defaultVal())
+        val value = Option(record.get(field.name())).getOrElse(field.default)
         builder.set(field.name(), value)
       }
       builder.build()
@@ -153,6 +153,15 @@ object AvroImplicits {
     /** Checks if it has same schema regardless of being optional */
     def hasSameSchema(other: Field): Boolean =
       field.schema().getTypesWithoutNull.equals(other.schema().getTypesWithoutNull)
+
+    /** If the default value of a field is set to `null`, calling `field.defaultVal()` will return
+      * `org.apache.avro.JsonProperties.Null` value which is not useful in the application.
+      * This method will return a `null` value instead.*/
+    def default: AnyRef = {
+      val originalDefault = field.defaultVal()
+      if (originalDefault.isInstanceOf[JsonProperties.Null]) null
+      else originalDefault
+    }
   }
 
   /*  Schema implicits */

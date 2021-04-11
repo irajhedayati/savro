@@ -12,10 +12,8 @@ object ResourceUtil {
 
   def getResourceAsSchema(path: String): Schema = new Schema.Parser().parse(getResourceAsString(path))
 
-  def getResourceIdlAsSchema(path: String, namespace: String, objectName: String): Schema = {
-    val idl = new Idl(Source.fromResource(path).bufferedReader())
+  def getResourceIdlAsSchema(path: String, namespace: String, objectName: String): Schema =
     new Idl(Source.fromResource(path).bufferedReader()).CompilationUnit.getType(s"$namespace.$objectName")
-  }
 
   def getResourceAsJson(path: String): JsonNode = objectMapper.readTree(getResourceAsString(path))
 
