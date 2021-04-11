@@ -131,6 +131,21 @@ object AvroImplicits {
         case Success(value)     => Right(value)
       }
 
+    /** Returns a copy of the object */
+    def copy(): GenericRecord = {
+      val builder = new GenericRecordBuilder(record.getSchema)
+      record.getSchema.getFields.asScala.foreach { field =>
+        val value = Option(record.get(field.name())).getOrElse(field.defaultVal())
+        builder.set(field.name(), value)
+      }
+      builder.build()
+    }
+
+    /** Creates a copy of the record and sets the value of the field.
+      * Note that the field must exists and the provided value must confirm with the schema of the field. */
+    def copy[T](fieldName: String, newValue: T): GenericRecord =
+      record.copy().set(fieldName, newValue)
+
   }
 
   implicit class SchemaFieldOps(field: Field) {

@@ -384,7 +384,13 @@ val booleanValue: Either[SAvroError, Option[Boolean]] =
 
 // To replace the schema of an Avro message with a new one
 val newSchema: Schema = ???
-val newMessage: GenericRecord = newMessage.updateSchema(newSchema)
+val newMessage: Either[IncompatibleSchemaError, GenericRecord] = avroMessage.updateSchema(newSchema)
+
+// Get a copy of the object in an immutable way
+val copyMessage: GenericRecord = avroMessage.copy()
+
+// Copy and update a message in Scala way
+val copyMessage2: GenericRecord = avroMessage.copy[Double]("fieldName", 2.43)
 ```
 
 Another useful function is `set` which helps you to set the value of a field.

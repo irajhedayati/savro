@@ -366,4 +366,43 @@ class AvroImplicitsTest extends AnyFlatSpec with Matchers {
 
     input.updateSchema(newSchema) shouldBe Right(expected)
   }
+
+  "copy" should "return a copy of the object respecting immutability" in {
+    val schema = new Schema.Parser().parse(
+      """{
+        |  "type": "record",
+        |  "name": "Person",
+        |  "namespace": "ca.dataedu.avro",
+        |  "fields": [{
+        |    "name": "phone",
+        |    "type": "long",
+        |    "default": 0
+        |  }]
+        |}""".stripMargin
+    )
+    val original = new GenericRecordBuilder(schema).set("phone", 5141112222L).build()
+    val copy = original.copy()
+    copy.put("phone", 4381112222L)
+    copy.get("phone") shouldBe 4381112222L // the copy object should be updated
+    original.get("phone") shouldBe 5141112222L // the original object should not be updated
+  }
+
+  "copy and set" should "return a copy of the object respecting immutability" in {
+    val schema = new Schema.Parser().parse(
+      """{
+        |  "type": "record",
+        |  "name": "Person",
+        |  "namespace": "ca.dataedu.avro",
+        |  "fields": [{
+        |    "name": "phone",
+        |    "type": "long",
+        |    "default": 0
+        |  }]
+        |}""".stripMargin
+    )
+    val original = new GenericRecordBuilder(schema).set("phone", 5141112222L).build()
+    val copy = original.copy("phone", 4381112222L)
+    copy.get("phone") shouldBe 4381112222L // the copy object should be updated
+    original.get("phone") shouldBe 5141112222L // the original object should not be updated
+  }
 }
