@@ -11,12 +11,13 @@ name := "savro"
 scalaVersion := scala212
 crossScalaVersions := supportedScalaVersions
 
-val AvroVersion = "1.9.0"
+val AvroVersion = "1.10.2"
 val CirceVersion = "0.13.0"
 
 lazy val avro = Seq(
-  ("org.apache.avro" % "avro"       % AvroVersion).exclude("com.fasterxml.jackson.core", "jackson-core"),
-  ("org.apache.avro" % "avro-tools" % AvroVersion).exclude("com.fasterxml.jackson.core", "jackson-core")
+  ("org.apache.avro" % "avro"          % AvroVersion).exclude("com.fasterxml.jackson.core", "jackson-core"),
+  ("org.apache.avro" % "avro-tools"    % AvroVersion).exclude("com.fasterxml.jackson.core", "jackson-core"),
+  ("org.apache.avro" % "avro-compiler" % AvroVersion).exclude("com.fasterxml.jackson.core", "jackson-core")
 )
 
 val circe = Seq(

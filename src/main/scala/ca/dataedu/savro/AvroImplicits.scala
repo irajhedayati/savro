@@ -118,18 +118,17 @@ object AvroImplicits {
       * It will return an error if the schema don't match. For the documentation on the schema resolution, refer to
       * https://avro.apache.org/docs/1.9.2/spec.html#Schema+Resolution
       */
-    def updateSchema(newSchema: Schema): Either[IncompatibleSchemaError, GenericRecord] =
-      Try {
-        val builder = new GenericRecordBuilder(newSchema)
-        newSchema.getFields.asScala.foreach { field =>
-          val value = Option(record.get(field.name())).getOrElse(field.defaultVal())
-          builder.set(field.name(), value)
-        }
-        builder.build()
-      } match {
+    def updateSchema(newSchema: Schema): Either[IncompatibleSchemaError, GenericRecord] = {
+      val builder = new GenericRecordBuilder(newSchema)
+      newSchema.getFields.asScala.foreach { field =>
+        val value = Try(record.get(field.name())).toOption.getOrElse(field.defaultVal())
+        builder.set(field.name(), value)
+      }
+      Try(builder.build()) match {
         case Failure(exception) => Left(IncompatibleSchemaError(newSchema, exception.getMessage))
         case Success(value)     => Right(value)
       }
+    }
 
     /** Returns a copy of the object */
     def copy(): GenericRecord = {
