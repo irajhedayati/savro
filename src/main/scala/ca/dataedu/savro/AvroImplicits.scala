@@ -30,7 +30,7 @@ object AvroImplicits {
     def as[T](
         fieldName: String
     )(f: (AnyRef, Schema) => Either[SAvroError, Option[T]]): Either[SAvroError, Option[T]] =
-      Option(record.get(fieldName))
+      Try(record.get(fieldName)).toOption
         .map(value => fieldSchema(fieldName).flatMap(schema => f(value, schema)))
         .pushDownOption()
 
@@ -108,10 +108,12 @@ object AvroImplicits {
 
     /** Converts the value to number based on the function or return an error if it's not a number */
     private def convert[T](fieldValue: AnyRef, f: AnyRef => T): Either[ToNumberError, Option[T]] =
-      Try(f(fieldValue)) match {
-        case Failure(error) => Left(ToNumberError(fieldValue.toString, "Failed to cast to a number", Option(error)))
-        case Success(value) => Right(Option(value))
-      }
+      if (fieldValue == null) Right(None)
+      else
+        Try(f(fieldValue)) match {
+          case Failure(error) => Left(ToNumberError(fieldValue.toString, "Failed to cast to a number", Option(error)))
+          case Success(value) => Right(Option(value))
+        }
 
     /**
       * Replaces the old schema with the new schema.

@@ -1,5 +1,6 @@
 package ca.dataedu.savro
 
+import ca.dataedu.savro.AvroError.ToNumberError
 import ca.dataedu.savro.AvroSchemaError.NonNullableUnionTypeError
 import org.apache.avro.generic.GenericRecordBuilder
 import org.apache.avro.{ Schema, SchemaBuilder }
@@ -405,4 +406,107 @@ class AvroImplicitsTest extends AnyFlatSpec with Matchers {
     copy.get("phone") shouldBe 4381112222L // the copy object should be updated
     original.get("phone") shouldBe 5141112222L // the original object should not be updated
   }
+
+  "asLong" should "return long value; value is provided and schema is long" in {
+    val schema = new Schema.Parser().parse(
+      """{
+        |  "type": "record",
+        |  "name": "Person",
+        |  "namespace": "ca.dataedu.avro",
+        |  "fields": [{
+        |    "name": "phone",
+        |    "type": "long",
+        |    "default": 0
+        |  }]
+        |}""".stripMargin
+    )
+    val record = new GenericRecordBuilder(schema).set("phone", 5141112222L).build()
+    record.asLong("phone") shouldBe Right(Option(5141112222L))
+  }
+
+  it should "return long value; value is provided and schema is int" in {
+    val schema = new Schema.Parser().parse(
+      """{
+        |  "type": "record",
+        |  "name": "Person",
+        |  "namespace": "ca.dataedu.avro",
+        |  "fields": [{
+        |    "name": "age",
+        |    "type": "int",
+        |    "default": 0
+        |  }]
+        |}""".stripMargin
+    )
+    val record = new GenericRecordBuilder(schema).set("age", 40).build()
+    record.asLong("age") shouldBe Right(Option(40L))
+  }
+
+  it should "return long value; value is provided and schema is string" in {
+    val schema = new Schema.Parser().parse(
+      """{
+        |  "type": "record",
+        |  "name": "Person",
+        |  "namespace": "ca.dataedu.avro",
+        |  "fields": [{
+        |    "name": "phone",
+        |    "type": "string",
+        |    "default": "0"
+        |  }]
+        |}""".stripMargin
+    )
+    val record = new GenericRecordBuilder(schema).set("phone", "5141112222").build()
+    record.asLong("phone") shouldBe Right(Option(5141112222L))
+  }
+
+  it should "return None if value is not provided" in {
+    val schema = new Schema.Parser().parse(
+      """{
+        |  "type": "record",
+        |  "name": "Person",
+        |  "namespace": "ca.dataedu.avro",
+        |  "fields": [{
+        |    "name": "phone",
+        |    "type": ["null", "string"],
+        |    "default": null
+        |  }]
+        |}""".stripMargin
+    )
+    val record = new GenericRecordBuilder(schema).build()
+    record.asLong("phone") shouldBe Right(None)
+  }
+
+  it should "return None if the field doesn't exist" in {
+    val schema = new Schema.Parser().parse(
+      """{
+        |  "type": "record",
+        |  "name": "Person",
+        |  "namespace": "ca.dataedu.avro",
+        |  "fields": [{
+        |    "name": "phone",
+        |    "type": ["null", "string"],
+        |    "default": null
+        |  }]
+        |}""".stripMargin
+    )
+    val record = new GenericRecordBuilder(schema).set("phone", "5141112222").build()
+    record.asLong("age") shouldBe Right(None)
+  }
+
+  it should "return error if schema is not long, int, and string" in {
+    val schema = new Schema.Parser().parse(
+      """{
+        |  "type": "record",
+        |  "name": "Person",
+        |  "namespace": "ca.dataedu.avro",
+        |  "fields": [{
+        |    "name": "phone",
+        |    "type": ["null", "boolean"],
+        |    "default": null
+        |  }]
+        |}""".stripMargin
+    )
+    val record = new GenericRecordBuilder(schema).set("phone", true).build()
+    record.asLong("phone") shouldBe Left(ToNumberError("true", "Field is not a supported type", None))
+  }
+
 }
