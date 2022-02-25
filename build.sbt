@@ -51,21 +51,19 @@ publishConfiguration := publishConfiguration.value.withOverwrite(true)
 publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
 
 /** Sonatype release configuration */
-homepage := Some(url("https://github.com/irajhedayati/savro"))
-scmInfo := Some(ScmInfo(url("https://github.com/irajhedayati/savro"), "git@github.com:irajhedayati/savro.git"))
-developers := List(
-  Developer(
-    "irajhedayati",
-    "Iraj Hedayati",
-    "iraj.hedayati@gmail.com",
-    url("https://www.dataedu.ca")
+inThisBuild(
+  List(
+    organization := "ca.dataedu",
+    homepage := Some(url("https://github.com/irajhedayati/savro")),
+    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
+    developers := List(
+      Developer(
+        "irajhedayati",
+        "Iraj Hedayati",
+        "iraj.hedayati@gmail.com",
+        url("https://www.dataedu.ca")
+      )
+    ),
+    scmInfo := Some(ScmInfo(url("https://github.com/irajhedayati/savro"), "git@github.com:irajhedayati/savro.git"))
   )
-)
-licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0"))
-publishMavenStyle := true
-publishTo := Some(
-  if (isSnapshot.value)
-    Opts.resolver.sonatypeSnapshots
-  else
-    Opts.resolver.sonatypeStaging
 )
