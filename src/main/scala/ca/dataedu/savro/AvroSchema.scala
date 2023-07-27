@@ -16,7 +16,7 @@ object AvroSchema {
   import AvroImplicits._
   import implicits._
 
-  val FloatingPointPattern: Regex = "[-+]?[0-9]*\\.[0-9]+".r
+  private val FloatingPointPattern: Regex = "[-+]?[0-9]*\\.[0-9]+".r
 
   def apply(idl: String, namespace: String, recordName: String): Schema =
     AvroProtocol(idl).getType(s"$namespace.$recordName")
