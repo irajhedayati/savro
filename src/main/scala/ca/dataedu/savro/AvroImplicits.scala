@@ -344,29 +344,15 @@ object AvroImplicits {
       else Schema.createUnion((schema.getTypes.asScala ++ other.getTypes.asScala).distinct.asJava)
 
     /** Union with a non-union assuming this schema is a union itself */
-    def unionWithNonUnion(nonUnion: Schema): Schema = {
-      /*
-      We only support simple cases where union is only for nullable options.
-      This is a bit of hack but if needed can be improved in future to support
-      edge cases as well.
-       */
-      val temp = schema.getTypes.asScala.filter(_.isRecord).filter(_.getFullName.equals(nonUnion.getFullName)).toList
-      val nonUnionAfterMerge = if (temp.isEmpty) nonUnion else mergeRecordSchema(temp.head, nonUnion)
-      val types = schema.getTypes.asScala
-        .filterNot(t => t.isRecord && t.getFullName.equals(nonUnion.getFullName)) :+ nonUnionAfterMerge
-      Schema.createUnion(types.distinct.asJava)
-    }
+    def unionWithNonUnion(nonUnion: Schema): Schema = unionOf(schema, nonUnion)
 
-    def unionWithUnion(union: Schema): Schema = {
-      /*
-      We only support simple cases where union is only for nullable options.
-      This is a bit of hack but if needed can be improved in future to support
-      edge cases as well.
-       */
-      val temp = union.getTypes.asScala.filter(_.isRecord).filter(_.getFullName.equals(schema.getFullName)).toList
-      val nonUnionAfterMerge = if (temp.isEmpty) schema else mergeRecordSchema(temp.head, schema)
+    def unionWithUnion(union: Schema): Schema = unionOf(union, schema)
+
+    private def unionOf(union: Schema, nonUnion: Schema): Schema = {
+      val temp = union.getTypes.asScala.filter(_.isRecord).filter(_.getFullName.equals(nonUnion.getFullName)).toList
+      val nonUnionAfterMerge = if (temp.isEmpty) nonUnion else mergeRecordSchema(temp.head, nonUnion)
       val types = Seq(nonUnionAfterMerge) ++ union.getTypes.asScala
-        .filterNot(t => t.isRecord && t.getFullName.equals(schema.getFullName))
+        .filterNot(t => t.isRecord && t.getFullName.equals(nonUnion.getFullName))
       Schema.createUnion(types.asJava)
     }
 

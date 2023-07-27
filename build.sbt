@@ -2,8 +2,8 @@ import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
 import sbtrelease.Version
 
-lazy val scala212 = "2.12.12"
-lazy val scala213 = "2.13.0"
+lazy val scala212 = "2.12.18"
+lazy val scala213 = "2.13.11"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 organization := "ca.dataedu"
@@ -11,8 +11,8 @@ name := "savro"
 scalaVersion := scala212
 crossScalaVersions := supportedScalaVersions
 
-val AvroVersion = "1.10.2"
-val CirceVersion = "0.13.0"
+val AvroVersion = "1.11.0"
+val CirceVersion = "0.14.3"
 
 lazy val avro = Seq(
   ("org.apache.avro" % "avro"          % AvroVersion).exclude("com.fasterxml.jackson.core", "jackson-core"),
@@ -28,7 +28,7 @@ val circe = Seq(
 ).map(_ % CirceVersion)
 
 libraryDependencies ++= avro ++ circe
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.1.1" % Test
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.15" % Test
 
 /** Release related settings */
 releaseCrossBuild := true
@@ -55,7 +55,7 @@ inThisBuild(
   List(
     organization := "ca.dataedu",
     homepage := Some(url("https://github.com/irajhedayati/savro")),
-    licenses += ("Apache-2.0", url("http://www.apache.org/licenses/LICENSE-2.0")),
+    licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0")),
     developers := List(
       Developer(
         "irajhedayati",

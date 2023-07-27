@@ -12,6 +12,22 @@ In order to add the library to your projects,
 libraryDependencies += "ca.dataedu" %% "savro" % "<version>"
 ```
 
+<!-- TOC -->
+  * [Infer Avro schema](#infer-avro-schema)
+    * [Infer the schema from single object](#infer-the-schema-from-single-object)
+    * [Infer the schema from an array of objects](#infer-the-schema-from-an-array-of-objects)
+  * [Avro IDL](#avro-idl)
+    * [Avro IDL to Avro Schema](#avro-idl-to-avro-schema)
+    * [Avro Schema to Avro IDL](#avro-schema-to-avro-idl)
+  * [Convert `case class` to `GenericRecord`](#convert-case-class-to-genericrecord)
+  * [Implicits](#implicits)
+    * [Schema Field](#schema-field)
+    * [Avro schema](#avro-schema)
+    * [Avro and GenericRecord](#avro-and-genericrecord)
+  * [HiveQL](#hiveql)
+    * [Convert Avro schema to HiveQL CREATE TABLE](#convert-avro-schema-to-hiveql-create-table)
+<!-- TOC -->
+
 ## Infer Avro schema
 
 It was the first functionality that led to development of this library.
@@ -168,6 +184,16 @@ val schema: Schema = ???
 val idl: Either[IllegalOperationError, String] = schema.toIdl("ProtocolName")
 ```
 
+## Convert `case class` to `GenericRecord`
+
+If you already have the schema, you can convert a `case class` to `GenericRecord
+
+```scala
+import package ca.dataedu.savro.ToAvro
+
+ToAvro.from(input, schema)
+```
+
 ## Implicits
 
 In order to improve the experience of working with Avro library, a set of
@@ -192,15 +218,15 @@ val anotherField: Field = ???
 aField.hasSameSchema(anotherField)
 ```
 
-| `aField` | `anotherField` | result|
-|:---:|:---:|:---|
-| String | String | `true` |
-| String | Optional String | `true` |
-| Optional String | String | `true` |
-| Optional String | Optional String | `true` |
-| String | Integer | `false` |
-| String | Optional Integer | `false` |
-| Optional String | Integer | `false` |
+|    `aField`     |  `anotherField`  | result  |
+|:---------------:|:----------------:|:--------|
+|     String      |      String      | `true`  |
+|     String      | Optional String  | `true`  |
+| Optional String |      String      | `true`  |
+| Optional String | Optional String  | `true`  |
+|     String      |     Integer      | `false` |
+|     String      | Optional Integer | `false` |
+| Optional String |     Integer      | `false` |
 | Optional String | Optional Integer | `false` |
 
 **Default Value**
@@ -381,13 +407,14 @@ There are two other functions related to making union of two schema but both of
 them are variants of this one. It is recommended to simply use the above
 -mentioned function. 
 
-### Avro (GenericRecord)
+### Avro and GenericRecord
 
 Working with Java objects in Scala are sometimes verbose and frustrating. These
 implicits will make it easier.
 
 ```scala
 import ca.dataedu.savro.AvroImplicits._
+import ca.dataedu.savro.AvroSchemaError.IncompatibleSchemaError
 import ca.dataedu.savro._
 import org.apache.avro.generic.GenericRecord
 import org.apache.avro.Schema
