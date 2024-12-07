@@ -407,6 +407,17 @@ There are two other functions related to making union of two schema but both of
 them are variants of this one. It is recommended to simply use the above
 -mentioned function. 
 
+**Drop a field**
+
+```scala
+import ca.dataedu.savro.AvroImplicits._
+import org.apache.avro.Schema
+
+val schema1: Schema = ???
+
+schema1 - "field_to_drop"
+```
+
 ### Avro and GenericRecord
 
 Working with Java objects in Scala are sometimes verbose and frustrating. These
@@ -445,6 +456,17 @@ val copyMessage2: GenericRecord = avroMessage.copy[Double]("fieldName", 2.43)
 ```
 
 Another useful function is `set` which helps you to set the value of a field.
+
+**Drop a field**
+
+```scala
+import ca.dataedu.savro.AvroImplicits._
+import org.apache.avro.generic.GenericRecord
+
+val record: GenericRecord = ???
+
+val newRecords: GenericRecord = record.drop("field_to_drop")
+```
 
 ## HiveQL
 

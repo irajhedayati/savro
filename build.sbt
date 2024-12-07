@@ -1,5 +1,5 @@
-import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.ReleasePlugin.autoImport.ReleaseTransformations._
+import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.Version
 
 lazy val scala212 = "2.12.18"
@@ -11,13 +11,13 @@ name := "savro"
 scalaVersion := scala212
 crossScalaVersions := supportedScalaVersions
 
-val AvroVersion = "1.11.0"
+val AvroVersion = "1.11.1"
 val CirceVersion = "0.14.3"
 
 lazy val avro = Seq(
-  ("org.apache.avro" % "avro"          % AvroVersion).exclude("com.fasterxml.jackson.core", "jackson-core"),
-  ("org.apache.avro" % "avro-tools"    % AvroVersion).exclude("com.fasterxml.jackson.core", "jackson-core"),
-  ("org.apache.avro" % "avro-compiler" % AvroVersion).exclude("com.fasterxml.jackson.core", "jackson-core")
+  "org.apache.avro" % "avro"          % AvroVersion,
+  "org.apache.avro" % "avro-tools"    % AvroVersion,
+  "org.apache.avro" % "avro-compiler" % AvroVersion
 )
 
 val circe = Seq(
@@ -54,7 +54,7 @@ publishLocalConfiguration := publishLocalConfiguration.value.withOverwrite(true)
 inThisBuild(
   List(
     organization := "ca.dataedu",
-    homepage := Some(url("https://github.com/irajhedayati/savro")),
+    homepage := Some(url("https://savro.dataedu.ca")),
     licenses += ("Apache-2.0", url("https://www.apache.org/licenses/LICENSE-2.0")),
     developers := List(
       Developer(
