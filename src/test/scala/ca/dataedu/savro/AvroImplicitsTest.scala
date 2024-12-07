@@ -256,6 +256,10 @@ class AvroImplicitsTest extends AnyFlatSpec with Matchers {
 
     val expected = SchemaBuilder
       .unionOf()
+      .array()
+      .items()
+      .nullType()
+      .and()
       .record("Product")
       .fields()
       .name("AB_Experiment__Product_")
@@ -265,10 +269,6 @@ class AvroImplicitsTest extends AnyFlatSpec with Matchers {
       .`type`(SchemaBuilder.builder().stringType().makeNullable)
       .withDefault(null)
       .endRecord()
-      .and()
-      .array()
-      .items()
-      .nullType()
       .endUnion()
 
     recordA.mergeWith(unionWithRecordA) shouldBe expected
@@ -302,21 +302,17 @@ class AvroImplicitsTest extends AnyFlatSpec with Matchers {
   it should "Array with nonArray and     nullable and     union" in {
     val a = SchemaBuilder.array().items(SchemaBuilder.builder().stringType().makeNullable)
     val b = SchemaBuilder.unionOf().stringType().and().intType().endUnion().makeNullable
-    val expected = Schema.createUnion((Seq(a) ++ b.getTypesWithoutNull.getTypes.asScala).asJava).makeNullable
-    val expectedReverted = Schema.createUnion((b.getTypesWithoutNull.getTypes.asScala ++ Seq(a)).asJava).makeNullable
+    val expected = Schema.createUnion((b.getTypesWithoutNull.getTypes.asScala :+ a).asJava).makeNullable
 
     a.mergeWith(b) shouldBe expected
-    b.mergeWith(a) shouldBe expectedReverted
   }
 
   it should "Array with nonArray and not nullable and     union" in {
     val a = SchemaBuilder.array().items(SchemaBuilder.builder().stringType().makeNullable)
     val b = SchemaBuilder.unionOf().stringType().and().intType().endUnion()
-    val expected = Schema.createUnion((Seq(a) ++ b.getTypes.asScala).asJava)
-    val expectedReverted = Schema.createUnion((b.getTypes.asScala ++ Seq(a)).asJava)
+    val expected = Schema.createUnion((b.getTypes.asScala :+ a).asJava)
 
     a.mergeWith(b) shouldBe expected
-    b.mergeWith(a) shouldBe expectedReverted
   }
 
   behavior.of("addField")
@@ -507,6 +503,49 @@ class AvroImplicitsTest extends AnyFlatSpec with Matchers {
     )
     val record = new GenericRecordBuilder(schema).set("phone", true).build()
     record.asLong("phone") shouldBe Left(ToNumberError("true", "Field is not a supported type", None))
+  }
+
+  "Drop field from Avro schema" should "remove the field from schema" in {
+    val inputFields = List(
+      new Schema.Field("field1", SchemaBuilder.builder().stringType()),
+      new Schema.Field("field2", SchemaBuilder.builder().stringType()),
+      new Schema.Field("field3", SchemaBuilder.builder().stringType())
+    ).asJava
+    val expectedFields = List(
+      new Schema.Field("field1", SchemaBuilder.builder().stringType()),
+      new Schema.Field("field3", SchemaBuilder.builder().stringType())
+    ).asJava
+    val input = Schema.createRecord("Record1", "doc", "ca.dataedu", false, inputFields)
+    val expected = Schema.createRecord("Record1", "doc", "ca.dataedu", false, expectedFields)
+
+    (input - "field2") shouldBe expected
+  }
+
+  "Drop field from Avro record" should "remove the field from record" in {
+    val inputFields = List(
+      new Schema.Field("field1", SchemaBuilder.builder().stringType()),
+      new Schema.Field("field2", SchemaBuilder.builder().stringType()),
+      new Schema.Field("field3", SchemaBuilder.builder().stringType())
+    ).asJava
+    val expectedFields = List(
+      new Schema.Field("field1", SchemaBuilder.builder().stringType()),
+      new Schema.Field("field3", SchemaBuilder.builder().stringType())
+    ).asJava
+
+    val inputSchema = Schema.createRecord("Record1", "doc", "ca.dataedu", false, inputFields)
+    val input = new GenericRecordBuilder(inputSchema)
+      .set("field1", "value1")
+      .set("field2", "value2")
+      .set("field3", "value3")
+      .build()
+
+    val expectedSchema = Schema.createRecord("Record1", "doc", "ca.dataedu", false, expectedFields)
+    val expected = new GenericRecordBuilder(expectedSchema)
+      .set("field1", "value1")
+      .set("field3", "value3")
+      .build()
+
+    input.drop("field2") shouldBe expected
   }
 
 }

@@ -19,7 +19,7 @@ object AvroImplicits {
   /**
     * Add some functionalities to facilitate extracting values from an Avro message
     */
-  implicit class GenericRecordOps(record: GenericRecord) {
+  implicit class GenericRecordHelper(record: GenericRecord) {
 
     /** Tries to extract the value of the field name from the Avro message.
       *
@@ -147,9 +147,12 @@ object AvroImplicits {
     def copy[T](fieldName: String, newValue: T): GenericRecord =
       record.copy().set(fieldName, newValue)
 
+    /** Drops a field from the record */
+    def drop(fieldName: String): GenericRecord = updateSchema(record.getSchema - fieldName).toOption.get
+
   }
 
-  implicit class SchemaFieldOps(field: Field) {
+  implicit class SchemaFieldHelper(field: Field) {
 
     /** Checks if it has same schema regardless of being optional */
     def hasSameSchema(other: Field): Boolean =
@@ -166,7 +169,7 @@ object AvroImplicits {
   }
 
   /*  Schema implicits */
-  implicit class SchemaImprovement(schema: Schema) {
+  implicit class SchemaHelper(schema: Schema) {
 
     /** Adds a field to the schema and returns a new schema */
     final def addField(
@@ -180,6 +183,16 @@ object AvroImplicits {
         for (f <- schema.getFields.asScala) yield new Field(f.name, f.schema, f.doc, f.defaultVal)
       }.toList :+ new Field(fieldName, fieldSchema, doc.orNull, defaultValue.orNull)
       outputSchema.setFields(outputFieldList.asJava)
+      outputSchema
+    }
+
+    final def -(fieldName: String): Schema = {
+      val outputSchema = Schema.createRecord(schema.getName, schema.getDoc, schema.getNamespace, false)
+      val newFields = schema.getFields.asScala
+        .filter(_.name() != fieldName)
+        .map(f => new Field(f.name, f.schema, f.doc, f.defaultVal))
+        .asJava
+      outputSchema.setFields(newFields)
       outputSchema
     }
 
@@ -349,11 +362,20 @@ object AvroImplicits {
     def unionWithUnion(union: Schema): Schema = unionOf(union, schema)
 
     private def unionOf(union: Schema, nonUnion: Schema): Schema = {
-      val temp = union.getTypes.asScala.filter(_.isRecord).filter(_.getFullName.equals(nonUnion.getFullName)).toList
-      val nonUnionAfterMerge = if (temp.isEmpty) nonUnion else mergeRecordSchema(temp.head, nonUnion)
-      val types = Seq(nonUnionAfterMerge) ++ union.getTypes.asScala
-        .filterNot(t => t.isRecord && t.getFullName.equals(nonUnion.getFullName))
-      Schema.createUnion(types.asJava)
+      // If the union contains a record of type `nonUnion`, then merge it with the nonUnion.
+      // We can have only one item in the union matching this criteria
+      val (unionTypesWithoutMatchingRecord, nonUnionAfterMerge) = union.getTypes.asScala
+        .filter(_.isRecord)
+        .filter(_.getFullName.equals(nonUnion.getFullName))
+        .toList
+        .headOption match {
+        case Some(matchingRecord) =>
+          val a = union.getTypes.asScala.filterNot(t => t.isRecord && t.getFullName.equals(nonUnion.getFullName))
+          val b = mergeRecordSchema(matchingRecord, nonUnion)
+          a -> b
+        case None => union.getTypes.asScala -> nonUnion
+      }
+      Schema.createUnion((unionTypesWithoutMatchingRecord :+ nonUnionAfterMerge).asJava)
     }
 
     private def recordMatcher(schema: Schema)(fullName: String): Boolean =
