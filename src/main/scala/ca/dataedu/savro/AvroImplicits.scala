@@ -180,9 +180,16 @@ object AvroImplicits {
     ): Schema = {
       val outputSchema = Schema.createRecord(schema.getName, schema.getDoc, schema.getNamespace, false)
       val outputFieldList = {
-        for (f <- schema.getFields.asScala) yield new Field(f.name, f.schema, f.doc, f.defaultVal)
+        for (f <- schema.getFields.asScala) yield {
+          val outputField = new Field(f.name, f.schema, f.doc, f.defaultVal)
+          f.aliases.forEach(alias => outputField.addAlias(alias))
+          outputField.addAllProps(f)
+          outputField
+        }
       }.toList :+ new Field(fieldName, fieldSchema, doc.orNull, defaultValue.orNull)
       outputSchema.setFields(outputFieldList.asJava)
+      schema.getAliases.forEach(alias => outputSchema.addAlias(alias))
+      outputSchema.addAllProps(schema)
       outputSchema
     }
 
