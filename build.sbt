@@ -11,14 +11,14 @@ name := "savro"
 scalaVersion := scala212
 crossScalaVersions := supportedScalaVersions
 
-val AvroVersion = "1.11.1"
-val CirceVersion = "0.14.3"
+val AvroVersion = "1.11.3"
+val CirceVersion = "0.14.4"
 
 lazy val avro = Seq(
-  "org.apache.avro" % "avro"          % AvroVersion,
-  "org.apache.avro" % "avro-tools"    % AvroVersion,
-  "org.apache.avro" % "avro-compiler" % AvroVersion
-)
+  "org.apache.avro" % "avro",
+  "org.apache.avro" % "avro-tools",
+  "org.apache.avro" % "avro-compiler"
+).map(_ % AvroVersion)
 
 val circe = Seq(
   "io.circe" %% "circe-core",
@@ -28,7 +28,7 @@ val circe = Seq(
 ).map(_ % CirceVersion)
 
 libraryDependencies ++= avro ++ circe
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.15" % Test
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.19" % Test
 
 /** Release related settings */
 releaseCrossBuild := true
