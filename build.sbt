@@ -12,7 +12,7 @@ scalaVersion := scala212
 crossScalaVersions := supportedScalaVersions
 
 val AvroVersion = "1.11.3"
-val CirceVersion = "0.14.4"
+val CirceVersion = "0.14.15"
 
 lazy val avro = Seq(
   "org.apache.avro" % "avro",
