@@ -11,7 +11,7 @@ name := "savro"
 scalaVersion := scala212
 crossScalaVersions := supportedScalaVersions
 
-val AvroVersion = "1.11.3"
+val AvroVersion = "1.11.5"
 val CirceVersion = "0.14.4"
 
 lazy val avro = Seq(
