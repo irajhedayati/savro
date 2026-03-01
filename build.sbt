@@ -3,7 +3,7 @@ import sbtrelease.ReleasePlugin.autoImport._
 import sbtrelease.Version
 
 lazy val scala212 = "2.12.18"
-lazy val scala213 = "2.13.11"
+lazy val scala213 = "2.13.18"
 lazy val supportedScalaVersions = List(scala212, scala213)
 
 organization := "ca.dataedu"
@@ -11,7 +11,7 @@ name := "savro"
 scalaVersion := scala212
 crossScalaVersions := supportedScalaVersions
 
-val AvroVersion = "1.11.3"
+val AvroVersion = "1.11.5"
 val CirceVersion = "0.14.15"
 
 lazy val avro = Seq(
