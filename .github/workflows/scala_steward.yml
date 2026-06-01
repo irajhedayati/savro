@@ -22,4 +22,4 @@ jobs:
           java-version: '17'
           cache: 'sbt'
       - name: Scala Steward
-        uses: scala-steward-org/scala-steward-action@v2.88.0
+        uses: scala-steward-org/scala-steward-action@v2.90.0
